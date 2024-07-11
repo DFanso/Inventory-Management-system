@@ -8,17 +8,32 @@ import {
   Patch,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { AppClsStore } from 'src/Types/users.types';
+import { ClsService } from 'nestjs-cls';
 
 @ApiTags('users')
-@Controller('users')
+@Controller({ path: 'users', version: '1' })
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly clsService: ClsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all users' })
@@ -27,13 +42,31 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiResponse({ status: 200, description: 'The user', type: User })
+  async profile(): Promise<User> {
+    const context = this.clsService.get<AppClsStore>();
+    if (!context || !context.user) {
+      throw new HttpException('User not found', HttpStatus.BAD_REQUEST);
+    }
+    const UserId = parseInt(context.user.id, 10);
+    console.log(context.user.id);
+    const user = await this.usersService.findOne({ id: UserId });
+    return user;
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiParam({ name: 'id', description: 'ID of the user' })
   @ApiResponse({ status: 200, description: 'The user', type: User })
   findOne(@Param('id') id: number): Promise<User> {
-    return this.usersService.findOne(id);
+    return this.usersService.findOne({ id });
   }
+
+  
 
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))

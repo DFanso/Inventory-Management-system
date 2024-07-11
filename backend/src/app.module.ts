@@ -7,6 +7,7 @@ import * as Joi from 'joi';
 import { ulid } from 'ulid';
 import { ClsModule } from 'nestjs-cls';
 import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -19,6 +20,7 @@ import { UsersModule } from './users/users.module';
         MYSQL_USERNAME: Joi.string().required(),
         MYSQL_PASSWORD: Joi.string().required(),
         MYSQL_SYNCHRONIZE: Joi.boolean().required(),
+        JWT_SECRET: Joi.string().required(),
       }),
     }),
     ClsModule.forRoot({
@@ -33,6 +35,7 @@ import { UsersModule } from './users/users.module';
     }),
     DatabaseModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,6 +1,7 @@
-import { Entity, Column } from 'typeorm';
+import { Entity, Column, BeforeInsert } from 'typeorm';
 import { AbstractEntity } from 'src/database/abstract.entity';
 import { UserRole } from 'src/Types/users.types';
+import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User extends AbstractEntity<User> {
@@ -22,4 +23,9 @@ export class User extends AbstractEntity<User> {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
 }
