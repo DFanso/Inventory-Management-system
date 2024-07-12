@@ -3,7 +3,7 @@
 import { Box } from "@chakra-ui/react";
 import Navbar from "./components/navbar";
 import ItemTable from "./components/ItemTable";
-import withAuth from "./components/withAuth";  // Import the HOC
+import withAuth from "./components/withAuth"; 
 
 function ItemPage() {
   return (
@@ -16,4 +16,4 @@ function ItemPage() {
   );
 }
 
-export default withAuth(ItemPage);  // Wrap the component with withAuth
+export default withAuth(ItemPage); 

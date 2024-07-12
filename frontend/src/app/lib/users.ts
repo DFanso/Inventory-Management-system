@@ -8,6 +8,7 @@ export interface User {
     name: string;
     userId: string;
     role: string;
+    email:string;
     isActive: boolean;
 }
 
@@ -76,3 +77,46 @@ export const updateUserStatus = async (userId: number, status: boolean): Promise
         throw error;
     }
 };
+
+export const updateUser = async (id: number, name: string, email: string, password: string, role: string): Promise<User> => {
+    const token = Cookies.get('token');
+    if (!token) {
+        throw new Error('No authentication token found');
+    }
+
+    try {
+        const response = await axios.patch<User>(
+            `${API_URL}/users/${id}`,
+            { name, email, password, role },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error updating user:', error);
+        throw error;
+    }
+};
+
+export const deleteUser = async (userId: number): Promise<void> => {
+    const token = Cookies.get('token');
+    if (!token) {
+        throw new Error('No authentication token found');
+    }
+
+    try {
+        await axios.delete(`${API_URL}/users/${userId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+    } catch (error) {
+        console.error('Error deleting user:', error);
+        throw error;
+    }
+};
+

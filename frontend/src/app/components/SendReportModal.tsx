@@ -15,7 +15,7 @@ import {
     FormErrorMessage,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { Item, sendReport } from "../lib/items";  // Import the sendReport function
+import { Item, sendReport } from "../lib/items"; 
 
 interface SendReportModalProps {
     isOpen: boolean;
@@ -77,9 +77,9 @@ export default function SendReportModal({ isOpen, onClose, item }: SendReportMod
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
+        <Modal isOpen={isOpen} onClose={onClose} size='lg'>
             <ModalOverlay />
-            <ModalContent>
+            <ModalContent maxW="600px">
                 <ModalHeader>Send Report to Merchants</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>

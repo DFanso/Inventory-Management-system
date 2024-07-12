@@ -33,7 +33,6 @@ export default function ItemTable() {
     };
 
     useEffect(() => {
-        // Retrieve user role from localStorage
         const userString = localStorage.getItem('user');
         if (userString) {
             const user = JSON.parse(userString);
@@ -63,7 +62,7 @@ export default function ItemTable() {
                 duration: 5000,
                 isClosable: true,
             });
-            fetchAndSetItems();  // Refresh the item list after deletion
+            fetchAndSetItems(); 
         } catch (error) {
             toast({
                 title: "Error",
@@ -75,7 +74,7 @@ export default function ItemTable() {
         }
     };
 
-    const canEdit = userRole === 'ADMIN' || userRole === 'MANAGER';
+    const canEdit = userRole === UserRole.ADMIN || userRole === UserRole.MANAGER;
 
     if (isLoading) {
         return (
@@ -113,9 +112,9 @@ export default function ItemTable() {
             <Table variant="simple" className="table-auto w-full">
                 <Thead>
                     <Tr>
-                        <Th>ID <ChevronUpIcon /> <ChevronDownIcon /></Th>
-                        <Th>Item Name <ChevronUpIcon /> <ChevronDownIcon /></Th>
-                        <Th>Quantity <ChevronUpIcon /> <ChevronDownIcon /></Th>
+                        <Th>ID</Th>
+                        <Th>Item Name</Th>
+                        <Th>Quantity</Th>
                         {canEdit && <Th>Actions</Th>}
                     </Tr>
                 </Thead>

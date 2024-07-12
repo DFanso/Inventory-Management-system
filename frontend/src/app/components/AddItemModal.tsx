@@ -14,7 +14,7 @@ import {
     FormErrorMessage,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { addItem } from '../lib/items';  // Import the addItem function
+import { addItem } from '../lib/items'; 
 
 interface AddItemModalProps {
     isOpen: boolean;

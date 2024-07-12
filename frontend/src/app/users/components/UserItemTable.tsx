@@ -1,14 +1,17 @@
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure, Spinner, Text, Select } from "@chakra-ui/react";
-import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure, Spinner, Text, Select, useToast } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import AddUserModal from "./AddUserModal";
-import { fetchUsers, updateUserStatus, User } from "../../lib/users"; 
+import EditUserModal from "./EditUserModal";
+import { fetchUsers, updateUserStatus, deleteUser, User } from "../../lib/users"; 
 
 export default function UserItemTable() {
     const { isOpen: isAddUserOpen, onOpen: onAddUserOpen, onClose: onAddUserClose } = useDisclosure();
+    const { isOpen: isEditUserOpen, onOpen: onEditUserOpen, onClose: onEditUserClose } = useDisclosure();
     const [userList, setUserList] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const toast = useToast();
 
     const loadUsers = async () => {
         try {
@@ -33,6 +36,37 @@ export default function UserItemTable() {
             loadUsers(); 
         } catch (error) {
             console.error('Error updating user status:', error);
+        }
+    };
+
+    const handleEditUserOpen = (user: User) => {
+        setSelectedUser(user);
+        onEditUserOpen();
+    };
+
+    const handleDeleteUser = async (userId: number) => {
+        setIsLoading(true);
+        try {
+            await deleteUser(userId);
+            toast({
+                title: "User deleted.",
+                description: "The user has been deleted successfully.",
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
+            loadUsers();
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            toast({
+                title: "Error",
+                description: "There was an error deleting the user.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -70,6 +104,7 @@ export default function UserItemTable() {
                         <Th>User ID</Th>
                         <Th>Display Name</Th>
                         <Th>Role</Th>
+                        <Th>Email</Th>
                         <Th>Is Active</Th>
                         <Th></Th>
                     </Tr>
@@ -80,6 +115,7 @@ export default function UserItemTable() {
                             <Td>{user.id}</Td>
                             <Td>{user.name}</Td>
                             <Td>{user.role}</Td>
+                            <Td>{user.email}</Td>
                             <Td>
                                 <Select
                                     value={user.isActive ? "True" : "False"}
@@ -90,16 +126,24 @@ export default function UserItemTable() {
                                 </Select>
                             </Td>
                             <Td>
-                                <Link color="blue.500" mr={10}>
+                                <Link color="blue.500" mr={10} onClick={() => handleEditUserOpen(user)}>
                                     Edit
                                 </Link>
-                                <Link color="red.500">Delete</Link>
+                                <Link color="red.500" onClick={() => handleDeleteUser(user.id)}>Delete</Link>
                             </Td>
                         </Tr>
                     ))}
                 </Tbody>
             </Table>
             <AddUserModal isOpen={isAddUserOpen} onClose={onAddUserClose} onUserAdded={loadUsers} />
+            {selectedUser && (
+                <EditUserModal
+                    isOpen={isEditUserOpen}
+                    onClose={onEditUserClose}
+                    onUserUpdated={loadUsers}
+                    user={selectedUser}
+                />
+            )}
         </Box>
     );
 }

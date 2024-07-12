@@ -13,7 +13,7 @@ import {
     useToast,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { Item, updateItem } from '../lib/items';  // Import the updateItem function
+import { Item, updateItem } from '../lib/items';
 
 interface EditItemModalProps {
     isOpen: boolean;
