@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      padding: 20px;
+      border-bottom: 1px solid #eeeeee;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: #4CAF50;
+    }
+    .content {
+      padding: 20px;
+    }
+    .content h2 {
+      font-size: 20px;
+      color: #333;
+    }
+    .content p {
+      font-size: 16px;
+      color: #555;
+    }
+    .content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .content table, th, td {
+      border: 1px solid #dddddd;
+    }
+    .content th, .content td {
+      padding: 12px;
+      text-align: left;
+    }
+    .content th {
+      background-color: #f2f2f2;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid #eeeeee;
+      font-size: 14px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Inventory Report</h1>
+    </div>
+    <div class="content">
+      <h2>Dear Merchant,</h2>
+      <p>Please find below the inventory report for the item "{{itemName}}": </p>
+      <table>
+        <tr>
+          <th>Item Name</th>
+          <th>Quantity</th>
+        </tr>
+        <tr>
+          <td>{{itemName}}</td>
+          <td>{{quantity}}</td>
+        </tr>
+      </table>
+      <p>If you have any questions or need further information, feel free to reach out.</p>
+      <p>Best regards,</p>
+      <p>IMS</p>
+    </div>
+    <div class="footer">
+      &copy; 2024 IMS. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
