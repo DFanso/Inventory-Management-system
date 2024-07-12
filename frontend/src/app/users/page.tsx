@@ -1,7 +1,7 @@
 "use client";
 import { Box, Heading, Text } from "@chakra-ui/react";
 import Navbar from "../components/navbar";
-import ItemTable from "../components/UserItemTable";
+import ItemTable from "./components/UserItemTable";
 
 export default function ItemPage() {
     return (

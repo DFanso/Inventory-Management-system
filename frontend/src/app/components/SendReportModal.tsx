@@ -1,4 +1,3 @@
-// src/app/components/SendReportModal.tsx
 import {
     Modal,
     ModalOverlay,

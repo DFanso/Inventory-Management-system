@@ -1,4 +1,3 @@
-// src/app/components/ItemTable.tsx
 import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure } from "@chakra-ui/react";
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useState } from "react";
