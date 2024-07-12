@@ -86,3 +86,31 @@ export const deleteItem = async (id: number): Promise<void> => {
         throw error;
     }
 };
+
+export const sendReport = async (itemName: string, quantity: number, emails: string): Promise<{ sentCount: number, failedEmails: string[] }> => {
+    const token = Cookies.get('token');
+    if (!token) {
+        throw new Error('No authentication token found');
+    }
+
+    try {
+        const response = await axios.post<{ sentCount: number, failedEmails: string[] }>(
+            `${API_URL}/email/send-inventory-report`,
+            {
+                itemName,
+                quantity,
+                emails
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Error sending report:', error);
+        throw error;
+    }
+};

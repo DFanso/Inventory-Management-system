@@ -11,9 +11,10 @@ import {
     FormLabel,
     Input,
     Textarea,
+    useToast,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { Item } from "../lib/items";  // Import the Item interface
+import { Item, sendReport } from "../lib/items";  // Import the sendReport function
 
 interface SendReportModalProps {
     isOpen: boolean;
@@ -23,11 +24,36 @@ interface SendReportModalProps {
 
 export default function SendReportModal({ isOpen, onClose, item }: SendReportModalProps) {
     const [emails, setEmails] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const toast = useToast();
 
-    const handleSendEmails = () => {
-        // Logic to handle sending the emails
-        console.log("Report sent:", { item, emails });
-        onClose();
+    const handleSendEmails = async () => {
+        if (!item) return;
+
+        setIsLoading(true);
+
+        try {
+            const response = await sendReport(item.name, item.quantity, emails);
+            toast({
+                title: "Report sent.",
+                description: `Sent to ${response.sentCount} emails. Failed emails: ${response.failedEmails.join(', ')}`,
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
+            onClose();
+        } catch (error) {
+            console.error("Error sending report:", error);
+            toast({
+                title: "Error",
+                description: "There was an error sending the report.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -56,7 +82,7 @@ export default function SendReportModal({ isOpen, onClose, item }: SendReportMod
                 </ModalBody>
 
                 <ModalFooter>
-                    <Button variant="ghost" onClick={onClose}>
+                    <Button variant="ghost" onClick={onClose} isDisabled={isLoading}>
                         Cancel
                     </Button>
                     <Button
@@ -65,6 +91,7 @@ export default function SendReportModal({ isOpen, onClose, item }: SendReportMod
                         _hover={{ backgroundColor: "#003bb5" }}
                         onClick={handleSendEmails}
                         ml={3}
+                        isLoading={isLoading}
                     >
                         Send Emails
                     </Button>
