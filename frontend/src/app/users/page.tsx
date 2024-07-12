@@ -1,9 +1,10 @@
 "use client";
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import Navbar from "../components/navbar";
 import ItemTable from "./components/UserItemTable";
+import withAuth from "../components/withAuth"; 
 
-export default function ItemPage() {
+function UserPage() {
     return (
         <>
             <Navbar />
@@ -13,3 +14,5 @@ export default function ItemPage() {
         </>
     );
 }
+
+export default withAuth(UserPage, ['ADMIN']); 

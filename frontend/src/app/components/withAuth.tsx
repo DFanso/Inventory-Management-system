@@ -1,18 +1,12 @@
-import { ReactNode, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
-
-
-interface JwtPayload {
-  exp: number;
-}
 
 interface WithAuthProps {
-    children: ReactNode;
+    children?: React.ReactNode;
 }
 
-const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) => {
+const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>, allowedRoles: string[] = []) => {
     const Wrapper: React.FC<P & WithAuthProps> = (props) => {
         const router = useRouter();
 
@@ -20,14 +14,21 @@ const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) =>
             const token = Cookies.get('token');
             if (token) {
                 try {
-                    const decoded = jwtDecode<JwtPayload>(token);
-                    const currentTime = Date.now() / 1000;
-                    if (decoded.exp && decoded.exp < currentTime) {
-                        Cookies.remove('token');
+                    const userString = localStorage.getItem('user');
+                    if (userString) {
+                        const user = JSON.parse(userString);
+                        const currentTime = Date.now() / 1000;
+                        if (user.exp && user.exp < currentTime) {
+                            Cookies.remove('token');
+                            router.push('/login');
+                        } else if (allowedRoles.length && !allowedRoles.includes(user.role)) {
+                            router.push('/unauthorized');
+                        }
+                    } else {
                         router.push('/login');
                     }
                 } catch (error) {
-                    console.error('Invalid token:', error);
+                    console.error('Error reading user data:', error);
                     router.push('/login');
                 }
             } else {
@@ -35,8 +36,7 @@ const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) =>
             }
         }, [router]);
 
-        const { children, ...rest } = props;
-        return <WrappedComponent {...rest as P} />;
+        return <WrappedComponent {...(props as P)} />;
     };
 
     Wrapper.displayName = `WithAuth(${getDisplayName(WrappedComponent)})`;

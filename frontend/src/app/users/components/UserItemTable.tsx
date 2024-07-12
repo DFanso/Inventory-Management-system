@@ -25,7 +25,7 @@ const items: Item[] = [
     { id: 11, name: "Ruben Dokidis", userId: "0011", role: "Admin", isActive: "False" }
 ];
 
-export default function ItemTable() {
+export default function UserItemTable() {
     const { isOpen: isAddItemOpen, onOpen: onAddItemOpen, onClose: onAddItemClose } = useDisclosure();
     const [itemList] = useState<Item[]>(items);
 
