@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
@@ -40,7 +41,10 @@ export class AuthService {
   ): Promise<{ user: any; accessToken: string } | null> {
     const user = await this.usersService.findOne({ email: signInDto.email });
     if (!user) {
-      return null;
+      throw new NotFoundException('User Not Found!');
+    }
+    if (user.isActive == false) {
+      throw new UnauthorizedException('User is Inactive!');
     }
 
     const isPasswordValid = await bcrypt.compare(

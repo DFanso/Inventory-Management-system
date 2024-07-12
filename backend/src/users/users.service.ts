@@ -11,21 +11,38 @@ export class UsersService {
   ) {}
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find();
-  }
+    const fields = Object.keys(
+      this.usersRepository.metadata.propertiesMap,
+    ).filter((key) => key !== 'password') as (keyof User)[];
 
-  async findOne(filter: FindOptionsWhere<User>): Promise<User | null> {
-    return this.usersRepository.findOne({
-      where: filter,
-      select: Object.keys(
-        this.usersRepository.metadata.propertiesMap,
-      ) as (keyof User)[],
+    return this.usersRepository.find({
+      select: fields,
     });
   }
 
-  async create(user: Partial<User>): Promise<User> {
+  async findOne(filter: FindOptionsWhere<User>): Promise<User | null> {
+    const fields = Object.keys(
+      this.usersRepository.metadata.propertiesMap,
+    ).filter((key) => key !== 'password') as (keyof User)[];
+
+    return this.usersRepository.findOne({
+      where: filter,
+      select: fields,
+    });
+  }
+
+  async create(user: Partial<User>): Promise<any> {
     const newUser = this.usersRepository.create(user);
-    return this.usersRepository.save(newUser);
+    this.usersRepository.save(newUser);
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isActive: user.isActive,
+      },
+    };
   }
 
   async update(id: number, updateUserDto: Partial<User>): Promise<User> {
@@ -37,7 +54,7 @@ export class UsersService {
     await this.usersRepository.delete(id);
   }
 
-  async disable(id: number): Promise<void> {
-    await this.usersRepository.update(id, { isActive: false });
+  async status(id: number, status: boolean): Promise<void> {
+    await this.usersRepository.update(id, { isActive: status });
   }
 }
