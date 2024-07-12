@@ -13,11 +13,12 @@ import {
     Textarea,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { Item } from "../lib/items";  // Import the Item interface
 
 interface SendReportModalProps {
     isOpen: boolean;
     onClose: () => void;
-    item: { name: string; quantity: string } | null;
+    item: Item | null;
 }
 
 export default function SendReportModal({ isOpen, onClose, item }: SendReportModalProps) {
@@ -42,7 +43,7 @@ export default function SendReportModal({ isOpen, onClose, item }: SendReportMod
                     </FormControl>
                     <FormControl id="quantity" mt={4}>
                         <FormLabel>Quantity</FormLabel>
-                        <Input value={item?.quantity} isReadOnly />
+                        <Input value={item?.quantity.toString()} isReadOnly />
                     </FormControl>
                     <FormControl id="emails" mt={4}>
                         <FormLabel>Email&apos;s of the Merchants (separate with a comma)</FormLabel>

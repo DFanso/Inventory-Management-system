@@ -12,41 +12,48 @@ import {
     Input,
     useToast,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import { addItem } from '../lib/items';  // Import the addItem function
+import { useState, useEffect } from "react";
+import { Item, updateItem } from '../lib/items';  // Import the updateItem function
 
-interface AddItemModalProps {
+interface EditItemModalProps {
     isOpen: boolean;
     onClose: () => void;
+    item: Item | null;
 }
 
-export default function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
+export default function EditItemModal({ isOpen, onClose, item }: EditItemModalProps) {
     const [itemName, setItemName] = useState("");
     const [quantity, setQuantity] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const toast = useToast();
 
-    const handleAddItem = async () => {
+    useEffect(() => {
+        if (item) {
+            setItemName(item.name);
+            setQuantity(item.quantity.toString());
+        }
+    }, [item]);
+
+    const handleEditItem = async () => {
+        if (!item) return;
         setIsLoading(true);
         try {
-            const newItem = await addItem(itemName, parseInt(quantity, 10));
+            const updatedItem = await updateItem(item.id, itemName, parseInt(quantity, 10));
 
             toast({
-                title: "Item added.",
-                description: `Item ${newItem.name} added successfully.`,
+                title: "Item updated.",
+                description: `Item ${updatedItem.name} updated successfully.`,
                 status: "success",
                 duration: 5000,
                 isClosable: true,
             });
 
-            setItemName("");
-            setQuantity("");
             onClose();
         } catch (error) {
-            console.error("Error adding item:", error);
+            console.error("Error updating item:", error);
             toast({
                 title: "Error",
-                description: "There was an error adding the item.",
+                description: "There was an error updating the item.",
                 status: "error",
                 duration: 5000,
                 isClosable: true,
@@ -60,7 +67,7 @@ export default function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
         <Modal isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>Add Item</ModalHeader>
+                <ModalHeader>Edit Item</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <FormControl id="item-name" isRequired>
@@ -90,11 +97,11 @@ export default function AddItemModal({ isOpen, onClose }: AddItemModalProps) {
                         backgroundColor="#0052ea"
                         color="white"
                         _hover={{ backgroundColor: "#003bb5" }}
-                        onClick={handleAddItem}
+                        onClick={handleEditItem}
                         ml={3}
                         isLoading={isLoading}
                     >
-                        Add Item
+                        Update Item
                     </Button>
                 </ModalFooter>
             </ModalContent>

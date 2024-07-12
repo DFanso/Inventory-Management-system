@@ -1,19 +1,36 @@
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure, Spinner, Text } from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure, Spinner, Text, useToast } from "@chakra-ui/react";
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useState, useEffect } from "react";
 import AddItemModal from "./AddItemModal";
+import EditItemModal from "./EditItemModal";
 import SendReportModal from "./SendReportModal";
-import { fetchItems, Item } from "../lib/items";
+import { fetchItems, deleteItem, Item } from "../lib/items";
 import { UserRole } from '../../../types/users.types';
 
 export default function ItemTable() {
     const { isOpen: isAddItemOpen, onOpen: onAddItemOpen, onClose: onAddItemClose } = useDisclosure();
+    const { isOpen: isEditItemOpen, onOpen: onEditItemOpen, onClose: onEditItemClose } = useDisclosure();
     const { isOpen: isSendReportOpen, onOpen: onSendReportOpen, onClose: onSendReportClose } = useDisclosure();
     const [itemList, setItemList] = useState<Item[]>([]);
-    const [selectedItem, setSelectedItem] = useState<{ name: string; quantity: string } | null>(null);
+    const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [userRole, setUserRole] = useState<UserRole>(UserRole.VIEWER);
+    const toast = useToast();
+
+    const fetchAndSetItems = async () => {
+        try {
+            setIsLoading(true);
+            const items = await fetchItems();
+            setItemList(items);
+            setError(null);
+        } catch (err) {
+            setError('Failed to fetch items');
+            console.error('Error fetching items:', err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
         // Retrieve user role from localStorage
@@ -23,29 +40,39 @@ export default function ItemTable() {
             setUserRole(user.role as UserRole);
         }
 
-        const getItems = async () => {
-            try {
-                setIsLoading(true);
-                const items = await fetchItems();
-                setItemList(items);
-                setError(null);
-            } catch (err) {
-                setError('Failed to fetch items');
-                console.error('Error fetching items:', err);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        getItems();
+        fetchAndSetItems();
     }, []);
 
     const handleSendReportClick = (item: Item) => {
-        setSelectedItem({
-            name: item.name,
-            quantity: item.quantity.toString()
-        });
+        setSelectedItem(item);
         onSendReportOpen();
+    };
+
+    const handleEditItemClick = (item: Item) => {
+        setSelectedItem(item);
+        onEditItemOpen();
+    };
+
+    const handleDeleteItemClick = async (id: number) => {
+        try {
+            await deleteItem(id);
+            toast({
+                title: "Item deleted.",
+                description: `Item with ID ${id} has been deleted.`,
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
+            fetchAndSetItems();  // Refresh the item list after deletion
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "There was an error deleting the item.",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+        }
     };
 
     const canEdit = userRole === 'ADMIN' || userRole === 'MANAGER';
@@ -86,18 +113,16 @@ export default function ItemTable() {
             <Table variant="simple" className="table-auto w-full">
                 <Thead>
                     <Tr>
-                        <Th>
-                            Item Name <ChevronUpIcon /> <ChevronDownIcon />
-                        </Th>
-                        <Th>
-                            Quantity <ChevronUpIcon /> <ChevronDownIcon />
-                        </Th>
+                        <Th>ID <ChevronUpIcon /> <ChevronDownIcon /></Th>
+                        <Th>Item Name <ChevronUpIcon /> <ChevronDownIcon /></Th>
+                        <Th>Quantity <ChevronUpIcon /> <ChevronDownIcon /></Th>
                         {canEdit && <Th>Actions</Th>}
                     </Tr>
                 </Thead>
                 <Tbody>
                     {itemList.map((item) => (
                         <Tr key={item.id}>
+                            <Td>{item.id}</Td>
                             <Td>{item.name}</Td>
                             <Td>{item.quantity}</Td>
                             {canEdit && (
@@ -105,10 +130,12 @@ export default function ItemTable() {
                                     <Link color="blue.500" mr={10} onClick={() => handleSendReportClick(item)}>
                                         Send Report
                                     </Link>
-                                    <Link color="blue.500" mr={10}>
+                                    <Link color="blue.500" mr={10} onClick={() => handleEditItemClick(item)}>
                                         Edit
                                     </Link>
-                                    <Link color="red.500">Delete</Link>
+                                    <Link color="red.500" onClick={() => handleDeleteItemClick(item.id)}>
+                                        Delete
+                                    </Link>
                                 </Td>
                             )}
                         </Tr>
@@ -117,7 +144,8 @@ export default function ItemTable() {
             </Table>
             {canEdit && (
                 <>
-                    <AddItemModal isOpen={isAddItemOpen} onClose={onAddItemClose} />
+                    <AddItemModal isOpen={isAddItemOpen} onClose={() => { onAddItemClose(); fetchAndSetItems(); }} />
+                    <EditItemModal isOpen={isEditItemOpen} onClose={() => { onEditItemClose(); fetchAndSetItems(); }} item={selectedItem} />
                     <SendReportModal isOpen={isSendReportOpen} onClose={onSendReportClose} item={selectedItem} />
                 </>
             )}
