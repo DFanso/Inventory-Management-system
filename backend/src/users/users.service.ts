@@ -31,6 +31,14 @@ export class UsersService {
     });
   }
 
+  async findOneWithPassword(
+    filter: FindOptionsWhere<User>,
+  ): Promise<User | null> {
+    return this.usersRepository.findOne({
+      where: filter,
+    });
+  }
+
   async create(user: Partial<User>): Promise<any> {
     const newUser = this.usersRepository.create(user);
     this.usersRepository.save(newUser);

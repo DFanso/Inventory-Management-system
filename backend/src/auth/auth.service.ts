@@ -39,7 +39,9 @@ export class AuthService {
   async signIn(
     signInDto: LoginDto,
   ): Promise<{ user: any; accessToken: string } | null> {
-    const user = await this.usersService.findOne({ email: signInDto.email });
+    const user = await this.usersService.findOneWithPassword({
+      email: signInDto.email,
+    });
     if (!user) {
       throw new NotFoundException('User Not Found!');
     }
