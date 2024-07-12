@@ -1,42 +1,65 @@
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure } from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure, Spinner, Text, Select } from "@chakra-ui/react";
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddUserModal from "./AddUserModal";
-
-interface Item {
-    id: number;
-    name: string;
-    userId: string;
-    role: string;
-    isActive: string;
-}
-
-const items: Item[] = [
-    { id: 1, name: "Corey Curtis", userId: "0001", role: "Manager", isActive: "True" },
-    { id: 2, name: "Alfonso Stanton", userId: "0002", role: "Viewer", isActive: "False" },
-    { id: 3, name: "Justin Aminoff", userId: "0003", role: "Manager", isActive: "False" },
-    { id: 4, name: "Leo Geidt", userId: "0004", role: "Admin", isActive: "True" },
-    { id: 5, name: "Jaydon Workman", userId: "0005", role: "Manager", isActive: "True" },
-    { id: 6, name: "Buben Levin", userId: "0006", role: "Manager", isActive: "False" },
-    { id: 7, name: "Omar Passaquindici Arcand", userId: "0007", role: "Manager", isActive: "True" },
-    { id: 8, name: "Phillip Mango", userId: "0008", role: "Manager", isActive: "False" },
-    { id: 9, name: "Martin Workman", userId: "0009", role: "Admin", isActive: "True" },
-    { id: 10, name: "Ruben Dokidis", userId: "0010", role: "Manager", isActive: "True" },
-    { id: 11, name: "Ruben Dokidis", userId: "0011", role: "Admin", isActive: "False" }
-];
+import { fetchUsers, updateUserStatus, User } from "../../lib/users"; 
 
 export default function UserItemTable() {
-    const { isOpen: isAddItemOpen, onOpen: onAddItemOpen, onClose: onAddItemClose } = useDisclosure();
-    const [itemList] = useState<Item[]>(items);
+    const { isOpen: isAddUserOpen, onOpen: onAddUserOpen, onClose: onAddUserClose } = useDisclosure();
+    const [userList, setUserList] = useState<User[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const loadUsers = async () => {
+        try {
+            const users = await fetchUsers();
+            setUserList(users);
+            setError(null);
+        } catch (error) {
+            setError('Failed to fetch users');
+            console.error('Error fetching users:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadUsers();
+    }, []);
+
+    const handleStatusChange = async (userId: number, status: boolean) => {
+        try {
+            await updateUserStatus(userId, status);
+            loadUsers(); 
+        } catch (error) {
+            console.error('Error updating user status:', error);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <Spinner size="xl" />
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Box textAlign="center" color="red.500" fontSize="xl" mt={10}>
+                {error}
+            </Box>
+        );
+    }
 
     return (
         <Box className="max-w-6xl mx-auto">
-            <Box className="flex justify-end items-center mb-4">
+            <Box className="flex justify-end items-center mb={4}">
                 <Button
                     backgroundColor="#0052ea"
                     color="white"
                     _hover={{ backgroundColor: "#003bb5" }}
-                    onClick={onAddItemOpen}
+                    onClick={onAddUserOpen}
                 >
                     Add Users
                 </Button>
@@ -44,28 +67,28 @@ export default function UserItemTable() {
             <Table variant="simple" className="table-auto w-full">
                 <Thead>
                     <Tr>
-                        <Th>
-                            Display Name <ChevronUpIcon /> <ChevronDownIcon />
-                        </Th>
-                        <Th>
-                            User ID <ChevronUpIcon /> <ChevronDownIcon />
-                        </Th>
-                        <Th>
-                            Role <ChevronUpIcon /> <ChevronDownIcon />
-                        </Th>
-                        <Th>
-                            Is Active <ChevronUpIcon /> <ChevronDownIcon />
-                        </Th>
+                        <Th>User ID</Th>
+                        <Th>Display Name</Th>
+                        <Th>Role</Th>
+                        <Th>Is Active</Th>
                         <Th></Th>
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {itemList.map((item) => (
-                        <Tr key={item.id}>
-                            <Td>{item.name}</Td>
-                            <Td>{item.userId}</Td>
-                            <Td>{item.role}</Td>
-                            <Td>{item.isActive}</Td>
+                    {userList.map((user) => (
+                        <Tr key={user.id}>
+                            <Td>{user.id}</Td>
+                            <Td>{user.name}</Td>
+                            <Td>{user.role}</Td>
+                            <Td>
+                                <Select
+                                    value={user.isActive ? "True" : "False"}
+                                    onChange={(e) => handleStatusChange(user.id, e.target.value === "True")}
+                                >
+                                    <option value="True">True</option>
+                                    <option value="False">False</option>
+                                </Select>
+                            </Td>
                             <Td>
                                 <Link color="blue.500" mr={10}>
                                     Edit
@@ -76,7 +99,7 @@ export default function UserItemTable() {
                     ))}
                 </Tbody>
             </Table>
-            <AddUserModal isOpen={isAddItemOpen} onClose={onAddItemClose} />
+            <AddUserModal isOpen={isAddUserOpen} onClose={onAddUserClose} onUserAdded={loadUsers} />
         </Box>
     );
 }

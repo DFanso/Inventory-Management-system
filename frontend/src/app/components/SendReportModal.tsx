@@ -12,6 +12,7 @@ import {
     Input,
     Textarea,
     useToast,
+    FormErrorMessage,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { Item, sendReport } from "../lib/items";  // Import the sendReport function
@@ -25,10 +26,29 @@ interface SendReportModalProps {
 export default function SendReportModal({ isOpen, onClose, item }: SendReportModalProps) {
     const [emails, setEmails] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [emailError, setEmailError] = useState("");
     const toast = useToast();
+
+    const validateEmails = () => {
+        const emailList = emails.split(",").map(email => email.trim());
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const invalidEmails = emailList.filter(email => !emailRegex.test(email));
+
+        if (invalidEmails.length > 0) {
+            setEmailError(`Invalid email(s): ${invalidEmails.join(", ")}`);
+            return false;
+        } else {
+            setEmailError("");
+            return true;
+        }
+    };
 
     const handleSendEmails = async () => {
         if (!item) return;
+
+        if (!validateEmails()) {
+            return;
+        }
 
         setIsLoading(true);
 
@@ -71,13 +91,15 @@ export default function SendReportModal({ isOpen, onClose, item }: SendReportMod
                         <FormLabel>Quantity</FormLabel>
                         <Input value={item?.quantity.toString()} isReadOnly />
                     </FormControl>
-                    <FormControl id="emails" mt={4}>
-                        <FormLabel>Email&apos;s of the Merchants (separate with a comma)</FormLabel>
+                    <FormControl id="emails" mt={4} isInvalid={!!emailError}>
+                        <FormLabel>Emails of the Merchants (separate with a comma)</FormLabel>
                         <Textarea
                             placeholder="Emails"
                             value={emails}
                             onChange={(e) => setEmails(e.target.value)}
+                            onBlur={validateEmails}
                         />
+                        {emailError && <FormErrorMessage>{emailError}</FormErrorMessage>}
                     </FormControl>
                 </ModalBody>
 
@@ -92,6 +114,7 @@ export default function SendReportModal({ isOpen, onClose, item }: SendReportMod
                         onClick={handleSendEmails}
                         ml={3}
                         isLoading={isLoading}
+                        isDisabled={isLoading || !!emailError}
                     >
                         Send Emails
                     </Button>

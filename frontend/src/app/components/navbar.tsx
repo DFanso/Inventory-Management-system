@@ -24,6 +24,10 @@ const Navbar = () => {
         router.push('/login');
     };
 
+    const handleMangeUsers = () => {
+        router.push('/users');
+    };
+
     return (
         <Box as="nav" bg="white" borderBottom="1px" borderColor="gray.200" px={4} py={4}>
             <Flex justify="space-between" align="center">
@@ -39,6 +43,7 @@ const Navbar = () => {
                             color="white"
                             _hover={{ backgroundColor: "#003bb5" }}
                             mr={4}
+                            onClick={handleMangeUsers}
                         >
                             Manage Users
                         </Button>
