@@ -1,45 +1,87 @@
-import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure } from "@chakra-ui/react";
+import { Box, Table, Thead, Tbody, Tr, Th, Td, Button, Link, useDisclosure, Spinner, Text } from "@chakra-ui/react";
 import { ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddItemModal from "./AddItemModal";
 import SendReportModal from "./SendReportModal";
-
-const items = [
-    { id: 1, name: "Corey Curtis", quantity: "0001" },
-    { id: 2, name: "Alfonso Stanton", quantity: "0002" },
-    { id: 3, name: "Justin Aminoff", quantity: "0003" },
-    { id: 4, name: "Leo Geidt", quantity: "0004" },
-    { id: 5, name: "Jaydon Workman", quantity: "0005" },
-    { id: 6, name: "Buben Levin", quantity: "0006" },
-    { id: 7, name: "Omar Passaquindici Arcand", quantity: "0007" },
-    { id: 8, name: "Phillip Mango", quantity: "0008" },
-    { id: 9, name: "Martin Workman", quantity: "0009" },
-    { id: 10, name: "Ruben Dokidis", quantity: "0010" },
-    { id: 11, name: "Ruben Dokidis", quantity: "0011" }
-];
+import { fetchItems, Item } from "../lib/items";
+import { UserRole } from '../../../types/users.types';
 
 export default function ItemTable() {
     const { isOpen: isAddItemOpen, onOpen: onAddItemOpen, onClose: onAddItemClose } = useDisclosure();
     const { isOpen: isSendReportOpen, onOpen: onSendReportOpen, onClose: onSendReportClose } = useDisclosure();
-    const [itemList] = useState(items);
+    const [itemList, setItemList] = useState<Item[]>([]);
     const [selectedItem, setSelectedItem] = useState<{ name: string; quantity: string } | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<UserRole>(UserRole.VIEWER);
 
-    const handleSendReportClick = (item: { name: string; quantity: string }) => {
-        setSelectedItem(item);
+    useEffect(() => {
+        // Retrieve user role from localStorage
+        const userString = localStorage.getItem('user');
+        if (userString) {
+            const user = JSON.parse(userString);
+            setUserRole(user.role as UserRole);
+        }
+
+        const getItems = async () => {
+            try {
+                setIsLoading(true);
+                const items = await fetchItems();
+                setItemList(items);
+                setError(null);
+            } catch (err) {
+                setError('Failed to fetch items');
+                console.error('Error fetching items:', err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        getItems();
+    }, []);
+
+    const handleSendReportClick = (item: Item) => {
+        setSelectedItem({
+            name: item.name,
+            quantity: item.quantity.toString()
+        });
         onSendReportOpen();
     };
 
+    const canEdit = userRole === 'ADMIN' || userRole === 'MANAGER';
+
+    if (isLoading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+                <Spinner size="xl" />
+            </Box>
+        );
+    }
+
+    if (error) {
+        return (
+            <Box textAlign="center" color="red.500" fontSize="xl" mt={10}>
+                {error}
+            </Box>
+        );
+    }
+
     return (
         <Box className="max-w-6xl mx-auto">
-            <Box className="flex justify-end items-center mb-4">
-                <Button
-                    backgroundColor="#0052ea"
-                    color="white"
-                    _hover={{ backgroundColor: "#003bb5" }}
-                    onClick={onAddItemOpen}
-                >
-                    Add Item
-                </Button>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                <Text fontSize="lg" fontWeight="bold">
+                    Your role: {userRole}
+                </Text>
+                {canEdit && (
+                    <Button
+                        backgroundColor="#0052ea"
+                        color="white"
+                        _hover={{ backgroundColor: "#003bb5" }}
+                        onClick={onAddItemOpen}
+                    >
+                        Add Item
+                    </Button>
+                )}
             </Box>
             <Table variant="simple" className="table-auto w-full">
                 <Thead>
@@ -50,7 +92,7 @@ export default function ItemTable() {
                         <Th>
                             Quantity <ChevronUpIcon /> <ChevronDownIcon />
                         </Th>
-                        <Th></Th>
+                        {canEdit && <Th>Actions</Th>}
                     </Tr>
                 </Thead>
                 <Tbody>
@@ -58,21 +100,27 @@ export default function ItemTable() {
                         <Tr key={item.id}>
                             <Td>{item.name}</Td>
                             <Td>{item.quantity}</Td>
-                            <Td>
-                                <Link color="blue.500" mr={10} onClick={() => handleSendReportClick(item)}>
-                                    Send Report
-                                </Link>
-                                <Link color="blue.500" mr={10}>
-                                    Edit
-                                </Link>
-                                <Link color="red.500">Delete</Link>
-                            </Td>
+                            {canEdit && (
+                                <Td>
+                                    <Link color="blue.500" mr={10} onClick={() => handleSendReportClick(item)}>
+                                        Send Report
+                                    </Link>
+                                    <Link color="blue.500" mr={10}>
+                                        Edit
+                                    </Link>
+                                    <Link color="red.500">Delete</Link>
+                                </Td>
+                            )}
                         </Tr>
                     ))}
                 </Tbody>
             </Table>
-            <AddItemModal isOpen={isAddItemOpen} onClose={onAddItemClose} />
-            <SendReportModal isOpen={isSendReportOpen} onClose={onSendReportClose} item={selectedItem} />
+            {canEdit && (
+                <>
+                    <AddItemModal isOpen={isAddItemOpen} onClose={onAddItemClose} />
+                    <SendReportModal isOpen={isSendReportOpen} onClose={onSendReportClose} item={selectedItem} />
+                </>
+            )}
         </Box>
     );
 }

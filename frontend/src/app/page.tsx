@@ -1,9 +1,11 @@
 "use client";
-import { Box, Heading, Text } from "@chakra-ui/react";
+
+import { Box } from "@chakra-ui/react";
 import Navbar from "./components/navbar";
 import ItemTable from "./components/ItemTable";
+import withAuth from "./components/withAuth";  // Import the HOC
 
-export default function ItemPage() {
+function ItemPage() {
   return (
     <>
       <Navbar />
@@ -13,3 +15,5 @@ export default function ItemPage() {
     </>
   );
 }
+
+export default withAuth(ItemPage);  // Wrap the component with withAuth

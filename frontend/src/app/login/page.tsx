@@ -1,14 +1,38 @@
 "use client"
-import { Box, Button, FormControl, FormLabel, Input, VStack } from "@chakra-ui/react";
-import { useState } from "react";
+import { Box, Button, FormControl, FormLabel, Input, VStack, Spinner } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { login } from '../lib/login';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
+import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+const LoginPage: React.FC = () => {
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const router = useRouter();
 
-    const handleLogin = () => {
-        // Logic to handle login
-        console.log("Login details:", { email, password });
+    useEffect(() => {
+        const token = Cookies.get('token');
+        if (token) {
+            router.push('/');
+        }
+    }, [router]);
+
+    const handleLogin = async () => {
+        setLoading(true);
+        try {
+            const result = await login(email, password);
+            Cookies.set('token', result.accessToken, { expires: 7, secure: true, sameSite: 'strict' });
+            toast.success('Login successful!');
+            router.push('/');
+        } catch (error) {
+            toast.error('Login failed!');
+            console.error('Login failed:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -52,11 +76,15 @@ export default function LoginPage() {
                         onClick={handleLogin}
                         width="100%"
                         mt={4}
+                        isDisabled={loading}
                     >
-                        Login
+                        {loading ? <Spinner size="sm" /> : 'Login'}
                     </Button>
                 </VStack>
             </Box>
+            <ToastContainer />
         </Box>
     );
 }
+
+export default LoginPage;
