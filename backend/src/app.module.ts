@@ -9,6 +9,7 @@ import { ClsModule } from 'nestjs-cls';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ItemsModule } from './items/items.module';
+import { EmailModule } from './email/email.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,6 +23,11 @@ import { ItemsModule } from './items/items.module';
         MYSQL_PASSWORD: Joi.string().required(),
         MYSQL_SYNCHRONIZE: Joi.boolean().required(),
         JWT_SECRET: Joi.string().required(),
+        BREVO_SMTP: Joi.string().required(),
+        BREVO_USER: Joi.string().required(),
+        BREVO_PASS: Joi.string().required(),
+        BREVO_SMTP_PORT: Joi.string().required(),
+        EMAIL_FROM_ADDRESS: Joi.string().required(),
       }),
     }),
     ClsModule.forRoot({
@@ -38,6 +44,7 @@ import { ItemsModule } from './items/items.module';
     UsersModule,
     AuthModule,
     ItemsModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
