@@ -42,7 +42,7 @@ export class EmailController {
   @Post('send-inventory-report')
   async sendInventoryReport(
     @Body() sendInventoryReportDto: SendInventoryReportDto,
-  ): Promise<void> {
+  ): Promise<{ sentCount: number; failedEmails: string[] }> {
     const { itemName, quantity, emails } = sendInventoryReportDto;
 
     const context = this.clsService.get<AppClsStore>();
@@ -60,6 +60,11 @@ export class EmailController {
     // Split and trim emails
     const emailList = emails.split(',').map((email) => email.trim());
 
-    await this.emailService.sendInventoryReport(emailList, itemName, quantity);
+    const result = await this.emailService.sendInventoryReport(
+      emailList,
+      itemName,
+      quantity,
+    );
+    return { sentCount: result.sentCount, failedEmails: result.failedEmails };
   }
 }

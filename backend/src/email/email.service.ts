@@ -47,7 +47,7 @@ export class EmailService {
     return this.inlineStyles(html);
   }
 
-  async sendEmail(to: string, subject: string, html: string): Promise<void> {
+  async sendEmail(to: string, subject: string, html: string): Promise<boolean> {
     const mailOptions = {
       from: this.configService.get<string>('EMAIL_FROM_ADDRESS'),
       to: to,
@@ -60,9 +60,10 @@ export class EmailService {
     try {
       const info = await this.transporter.sendMail(mailOptions);
       this.logger.verbose(`Email sent: ${info.messageId}`);
+      return true;
     } catch (error) {
       this.logger.error(`Email error: ${error}`);
-      throw error;
+      return false;
     }
   }
 
@@ -70,14 +71,31 @@ export class EmailService {
     emails: string[],
     itemName: string,
     quantity: number,
-  ): Promise<void> {
+  ): Promise<{ sentCount: number; failedEmails: string[] }> {
     const subject = 'Inventory Report';
     const html = await this.renderTemplate('inventory-report.hbs', {
       itemName,
       quantity,
     });
+
+    let sentCount = 0;
+    const failedEmails: string[] = [];
+
     for (const email of emails) {
-      await this.sendEmail(email, subject, html);
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (emailRegex.test(email)) {
+        const success = await this.sendEmail(email, subject, html);
+        if (success) {
+          sentCount++;
+        } else {
+          failedEmails.push(email);
+        }
+      } else {
+        this.logger.warn(`Invalid email format: ${email}`);
+        failedEmails.push(email);
+      }
     }
+
+    return { sentCount, failedEmails };
   }
 }
