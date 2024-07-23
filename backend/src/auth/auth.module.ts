@@ -7,6 +7,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { ClsModule } from 'nestjs-cls';
 import { ConfigService } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
+import { RedisModule } from '@nestjs-modules/ioredis';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { UsersModule } from '../users/users.module';
     }),
     ClsModule,
     UsersModule,
+    RedisModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, Logger],

@@ -34,16 +34,19 @@ An Inventory Management System built with Next.js, NestJS, TypeORM, MySQL, and C
 ### Backend
 
 1. Clone the repository:
+
     ```bash
     cd backend
     ```
 
 2. Install dependencies:
+
     ```bash
     yarn install
     ```
 
 3. Set up environment variables in a `.env` file in the backend root:
+
     ```env
     MYSQL_HOST=
     MYSQL_PORT=
@@ -60,6 +63,7 @@ An Inventory Management System built with Next.js, NestJS, TypeORM, MySQL, and C
     ```
 
 4. Run the backend server:
+
     ```bash
     yarn dev
     ```
@@ -69,21 +73,25 @@ An Inventory Management System built with Next.js, NestJS, TypeORM, MySQL, and C
 ### Frontend
 
 1. Navigate to the frontend directory:
+
     ```bash
     cd ../frontend
     ```
 
 2. Install dependencies:
+
     ```bash
     yarn install
     ```
 
 3. Set up environment variables in a `.env.local` file in the frontend root:
+
     ```env
     NEXT_PUBLIC_API_URL=http://localhost:9000/v1
     ```
 
 4. Run the frontend server:
+
     ```bash
     yarn dev
     ```
