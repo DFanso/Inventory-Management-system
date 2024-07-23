@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ItemsModule } from './items/items.module';
 import { EmailModule } from './email/email.module';
+import { RedisConfigModule } from './redis/redis.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -28,6 +29,8 @@ import { EmailModule } from './email/email.module';
         BREVO_PASS: Joi.string().required(),
         BREVO_SMTP_PORT: Joi.string().required(),
         EMAIL_FROM_ADDRESS: Joi.string().required(),
+        // REDIS_HOST: Joi.string().required(),
+        // REDIS_PORT: Joi.string().required(),
       }),
     }),
     ClsModule.forRoot({
@@ -45,6 +48,7 @@ import { EmailModule } from './email/email.module';
     AuthModule,
     ItemsModule,
     EmailModule,
+    RedisConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService],
