@@ -1,0 +1,4 @@
+
+k8s/mysql-secret.yaml
+k8s/jwt-secret.yaml
+k8s/brevo-secret.yaml

@@ -1,18 +1,24 @@
-# Use the official Node.js image.
-FROM node:20
-
-# Create and change to the app directory.
+# Build stage
+FROM node:20 AS builder
 WORKDIR /usr/src/app
-
-# Install app dependencies.
 COPY package*.json ./
 RUN npm install
-
-# Copy app source code.
 COPY . .
+RUN npm run build
 
-# Expose the port the app runs on
-EXPOSE 000
+# Production stage
+FROM node:20-slim
+WORKDIR /usr/src/app
+COPY --from=builder /usr/src/app/dist ./dist
+COPY package*.json ./
+COPY .env ./
+RUN npm install --only=production
 
-# Run the application.
-CMD ["npm", "run", "start:prod"]
+# Install dependencies required for bcrypt
+RUN apt-get update && apt-get install -y python3 make g++
+
+# Rebuild bcrypt
+RUN npm rebuild bcrypt --build-from-source
+
+EXPOSE 9000
+CMD ["node", "dist/main"]
