@@ -7,8 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { InjectRedis } from '@liaoliaots/nestjs-redis';
-import Redis from 'ioredis';
+import { InjectRedis, Redis } from '@svtslv/nestjs-ioredis';
 
 @Injectable()
 export class AuthService {
@@ -32,7 +31,7 @@ export class AuthService {
         email: signInDto.email,
       });
       if (user) {
-        await this.redis.set(cacheKey, JSON.stringify(user), 'EX', 3600); // cache for 1 hour
+        await this.redis.set(cacheKey, JSON.stringify(user), 'EX', 3600);
       }
     }
 

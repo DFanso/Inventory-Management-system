@@ -29,8 +29,8 @@ import { RedisConfigModule } from './redis/redis.module';
         BREVO_PASS: Joi.string().required(),
         BREVO_SMTP_PORT: Joi.string().required(),
         EMAIL_FROM_ADDRESS: Joi.string().required(),
-        // REDIS_HOST: Joi.string().required(),
-        // REDIS_PORT: Joi.string().required(),
+        REDIS_HOST: Joi.string().required(),
+        REDIS_PORT: Joi.string().required(),
       }),
     }),
     ClsModule.forRoot({
